@@ -17,12 +17,22 @@ export async function generateReport(
   state: GeneratePostState
 ): Promise<GeneratePostUpdate> {
   const { pageContents, relevantLinks, links } = state;
+  const linksToUse =
+    relevantLinks && relevantLinks.length > 0 ? relevantLinks : links;
+
+  if (!linksToUse || linksToUse.length === 0) {
+    console.warn("No links available for report generation");
+    return {
+      report: "Unable to generate report: No source links available.",
+      status: GENERATE_POST_STATUS.REPORT_SKIPPED_NO_CONTENT,
+    };
+  }
 
   // Use page contents if available, otherwise use links directly
   const contentToAnalyze =
     pageContents && pageContents.length > 0
       ? pageContents.join("\n\n---\n\n")
-      : `Source links: ${(relevantLinks || links).join(", ")}`;
+      : `Source links: ${linksToUse.join(", ")}`;
 
   if (!contentToAnalyze || contentToAnalyze.trim() === "") {
     console.warn("No content available for report generation");
@@ -43,7 +53,7 @@ ${contentToAnalyze.slice(0, 15000)}
 </content>
 
 <source-links>
-${(relevantLinks || links).join("\n")}
+${linksToUse.join("\n")}
 </source-links>`;
 
   try {
