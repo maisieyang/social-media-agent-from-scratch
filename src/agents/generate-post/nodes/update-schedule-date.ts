@@ -21,6 +21,7 @@ export async function updateScheduleDate(
     console.log("No schedule date update provided");
     return {
       userResponse: undefined,
+      next: undefined,
     };
   }
 
@@ -34,6 +35,7 @@ export async function updateScheduleDate(
     // Keep current date on parse failure
     return {
       userResponse: `Error: ${parseResult.error}`,
+      next: undefined,
     };
   }
 
@@ -44,6 +46,7 @@ export async function updateScheduleDate(
     console.error("Invalid schedule date:", validationResult.error);
     return {
       userResponse: `Error: ${validationResult.error}`,
+      next: undefined,
     };
   }
 
@@ -53,5 +56,6 @@ export async function updateScheduleDate(
   return {
     scheduleDate: parseResult.date,
     userResponse: undefined,
+    next: undefined,
   };
 }

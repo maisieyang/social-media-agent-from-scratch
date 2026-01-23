@@ -105,3 +105,37 @@ export const SKIP_USED_URLS_CHECK = "skipUsedUrlsCheck";
 
 // Twitter character limit
 export const TWITTER_MAX_CHAR_LENGTH = 280;
+
+export const GENERATE_POST_STATUS = {
+  URL_CHECK_SKIPPED: "url_check_skipped",
+  URL_CHECK_SKIPPED_NO_LINKS: "url_check_skipped_no_links",
+  URL_CHECK_ALL_DUPLICATES: "url_check_all_duplicates",
+  URL_CHECK_FILTERED: "url_check_filtered",
+  URL_CHECK_ALL_NEW: "url_check_all_new",
+  REPORT_SKIPPED_NO_CONTENT: "report_skipped_no_content",
+  REPORT_GENERATED: "report_generated",
+  REPORT_FAILED: "report_failed",
+  POST_GENERATED_NO_REPORT: "post_generated_no_report",
+  POST_GENERATED: "post_generated",
+  POST_GENERATED_FROM_FEEDBACK: "post_generated_from_feedback",
+  POST_GENERATION_FAILED: "post_generation_failed",
+  CONDENSE_MAX_ATTEMPTS: "condense_max_attempts",
+  CONDENSE_SUCCESS: "condense_success",
+  CONDENSE_FAILED: "condense_failed",
+  NO_POST_FOR_REVIEW: "no_post_for_review",
+  REVIEW_ACCEPTED: "review_accepted",
+  REVIEW_EDIT_REQUESTED: "review_edit_requested",
+  REVIEW_IGNORED: "review_ignored",
+  REVIEW_SCHEDULE_UPDATE_REQUESTED: "review_schedule_update_requested",
+  REVIEW_UNKNOWN_RESPONSE: "review_unknown_response",
+  AUTH_REQUIRED: "auth_required",
+  PUBLISHED: "published",
+  PUBLISH_FAILED: "publish_failed",
+  SCHEDULED: "scheduled",
+  REWRITE_SKIPPED_NO_FEEDBACK: "rewrite_skipped_no_feedback",
+  REWRITE_COMPLETED: "rewrite_completed",
+  REWRITE_FAILED: "rewrite_failed",
+} as const;
+
+export type GeneratePostStatus =
+  (typeof GENERATE_POST_STATUS)[keyof typeof GENERATE_POST_STATUS];

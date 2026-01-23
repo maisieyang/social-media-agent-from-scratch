@@ -5,7 +5,7 @@ import {
   GeneratePostUpdate,
   GeneratePostConfigurable,
 } from "../state.js";
-import { SKIP_USED_URLS_CHECK } from "../constants.js";
+import { GENERATE_POST_STATUS, SKIP_USED_URLS_CHECK } from "../constants.js";
 import { checkUrlsUsage } from "./store-operations.js";
 
 /**
@@ -35,12 +35,16 @@ export async function checkUrls(
 
   if (skipCheck) {
     console.log("URL deduplication check skipped (SKIP_USED_URLS_CHECK=true)");
-    return {};
+    return {
+      status: GENERATE_POST_STATUS.URL_CHECK_SKIPPED,
+    };
   }
 
   if (!links || links.length === 0) {
     console.log("No URLs provided - skipping deduplication check");
-    return {};
+    return {
+      status: GENERATE_POST_STATUS.URL_CHECK_SKIPPED_NO_LINKS,
+    };
   }
 
   console.log(`Checking ${links.length} URLs for duplicates...`);
@@ -77,6 +81,7 @@ export async function checkUrls(
     return {
       next: END,
       userResponse: "All provided URLs have already been used for post generation",
+      status: GENERATE_POST_STATUS.URL_CHECK_ALL_DUPLICATES,
     };
   }
 
@@ -89,6 +94,10 @@ export async function checkUrls(
 
   return {
     links: newUrls,
+    status:
+      newUrls.length < links.length
+        ? GENERATE_POST_STATUS.URL_CHECK_FILTERED
+        : GENERATE_POST_STATUS.URL_CHECK_ALL_NEW,
   };
 }
 

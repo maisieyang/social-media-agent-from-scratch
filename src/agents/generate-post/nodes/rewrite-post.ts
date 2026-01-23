@@ -6,7 +6,7 @@ import {
   POST_CONTENT_RULES,
   POST_STRUCTURE_INSTRUCTIONS,
 } from "../prompts/index.js";
-import { TWITTER_MAX_CHAR_LENGTH } from "../constants.js";
+import { GENERATE_POST_STATUS, TWITTER_MAX_CHAR_LENGTH } from "../constants.js";
 
 /**
  * Rewrite Post Node
@@ -29,6 +29,8 @@ export async function rewritePost(
     console.warn("No user feedback provided for rewrite");
     return {
       userResponse: undefined,
+      next: undefined,
+      status: GENERATE_POST_STATUS.REWRITE_SKIPPED_NO_FEEDBACK,
     };
   }
 
@@ -89,6 +91,8 @@ The post MUST be under ${TWITTER_MAX_CHAR_LENGTH} characters including the link.
     return {
       post: rewrittenPost,
       userResponse: undefined,
+      next: undefined,
+      status: GENERATE_POST_STATUS.REWRITE_COMPLETED,
       // Reset condense count for potential re-condensing
       condenseCount: 0,
     };
@@ -96,6 +100,8 @@ The post MUST be under ${TWITTER_MAX_CHAR_LENGTH} characters including the link.
     console.error("Error rewriting post:", error);
     return {
       userResponse: undefined,
+      next: undefined,
+      status: GENERATE_POST_STATUS.REWRITE_FAILED,
     };
   }
 }

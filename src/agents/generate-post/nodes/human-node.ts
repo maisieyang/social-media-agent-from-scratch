@@ -1,8 +1,8 @@
-import { interrupt } from "@langchain/langgraph";
+import { END, interrupt } from "@langchain/langgraph";
 import { GeneratePostState, GeneratePostUpdate } from "../state.js";
 import { HumanInterrupt, HumanResponse } from "../../types.js";
 import { formatDateType } from "./date-parser.js";
-import { TWITTER_MAX_CHAR_LENGTH } from "../constants.js";
+import { GENERATE_POST_STATUS, TWITTER_MAX_CHAR_LENGTH } from "../constants.js";
 
 /**
  * Create the human interrupt request payload
@@ -146,7 +146,9 @@ export async function humanReviewNode(
   if (!post) {
     console.warn("No post to review, skipping human review");
     return {
-      next: "__end__",
+      next: END,
+      userResponse: undefined,
+      status: GENERATE_POST_STATUS.NO_POST_FOR_REVIEW,
     };
   }
 
@@ -169,17 +171,22 @@ export async function humanReviewNode(
     case "accept":
       return {
         next: "schedulePost",
+        userResponse: undefined,
+        status: GENERATE_POST_STATUS.REVIEW_ACCEPTED,
       };
 
     case "edit":
       return {
         userResponse: humanResponse.args?.feedback as string | undefined,
         next: "rewritePost",
+        status: GENERATE_POST_STATUS.REVIEW_EDIT_REQUESTED,
       };
 
     case "ignore":
       return {
-        next: "__end__",
+        next: END,
+        userResponse: undefined,
+        status: GENERATE_POST_STATUS.REVIEW_IGNORED,
       };
 
     case "respond":
@@ -189,6 +196,7 @@ export async function humanReviewNode(
         return {
           userResponse: String(args.scheduleDate || args.date),
           next: "updateScheduleDate",
+          status: GENERATE_POST_STATUS.REVIEW_SCHEDULE_UPDATE_REQUESTED,
         };
       }
       // Check if it contains post edit
@@ -196,17 +204,20 @@ export async function humanReviewNode(
         return {
           userResponse: String(args.post || args.content || args.text),
           next: "rewritePost",
+          status: GENERATE_POST_STATUS.REVIEW_EDIT_REQUESTED,
         };
       }
       // Unknown response type
       return {
         userResponse: JSON.stringify(args),
         next: "unknownResponse",
+        status: GENERATE_POST_STATUS.REVIEW_UNKNOWN_RESPONSE,
       };
 
     default:
       return {
         next: "unknownResponse",
+        status: GENERATE_POST_STATUS.REVIEW_UNKNOWN_RESPONSE,
       };
   }
 }
@@ -226,5 +237,6 @@ export async function unknownResponseNode(
   return {
     userResponse: undefined,
     next: undefined,
+    status: GENERATE_POST_STATUS.REVIEW_UNKNOWN_RESPONSE,
   };
 }

@@ -2,7 +2,7 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { getDeterministicModel } from "../../llm.js";
 import { GeneratePostState, GeneratePostUpdate } from "../state.js";
 import { POST_CONDENSE_SYSTEM_PROMPT, POST_CONTENT_RULES } from "../prompts/index.js";
-import { TWITTER_MAX_CHAR_LENGTH } from "../constants.js";
+import { GENERATE_POST_STATUS, TWITTER_MAX_CHAR_LENGTH } from "../constants.js";
 
 /**
  * Maximum number of condense attempts to prevent infinite loops
@@ -27,6 +27,7 @@ export async function condensePost(
     );
     return {
       condenseCount: condenseCount + 1,
+      status: GENERATE_POST_STATUS.CONDENSE_MAX_ATTEMPTS,
     };
   }
 
@@ -78,11 +79,13 @@ Important:
     return {
       post: condensedPost,
       condenseCount: condenseCount + 1,
+      status: GENERATE_POST_STATUS.CONDENSE_SUCCESS,
     };
   } catch (error) {
     console.error("Error condensing post:", error);
     return {
       condenseCount: condenseCount + 1,
+      status: GENERATE_POST_STATUS.CONDENSE_FAILED,
     };
   }
 }

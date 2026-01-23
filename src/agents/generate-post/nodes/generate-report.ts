@@ -5,6 +5,7 @@ import {
   BUSINESS_CONTEXT,
   REPORT_GENERATION_PROMPT,
 } from "../prompts/index.js";
+import { GENERATE_POST_STATUS } from "../constants.js";
 
 /**
  * Generate Report Node
@@ -27,6 +28,7 @@ export async function generateReport(
     console.warn("No content available for report generation");
     return {
       report: "Unable to generate report: No content available.",
+      status: GENERATE_POST_STATUS.REPORT_SKIPPED_NO_CONTENT,
     };
   }
 
@@ -59,11 +61,13 @@ ${(relevantLinks || links).join("\n")}
 
     return {
       report,
+      status: GENERATE_POST_STATUS.REPORT_GENERATED,
     };
   } catch (error) {
     console.error("Error generating report:", error);
     return {
       report: `Error generating report: ${error instanceof Error ? error.message : "Unknown error"}`,
+      status: GENERATE_POST_STATUS.REPORT_FAILED,
     };
   }
 }

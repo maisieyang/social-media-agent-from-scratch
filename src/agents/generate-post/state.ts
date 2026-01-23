@@ -5,6 +5,7 @@ import {
   SKIP_CONTENT_RELEVANCY_CHECK,
   SKIP_USED_URLS_CHECK,
   TEXT_ONLY_MODE,
+  type GeneratePostStatus,
 } from "./constants.js";
 import { filterUnwantedImageUrls } from "../utils.js";
 
@@ -103,6 +104,11 @@ export const GeneratePostAnnotation = Annotation.Root({
     | typeof END
     | undefined
   >({
+    reducer: (_state, update) => update,
+    default: () => undefined,
+  }),
+  /** Status marker for the current step */
+  status: Annotation<GeneratePostStatus | undefined>({
     reducer: (_state, update) => update,
     default: () => undefined,
   }),

@@ -7,7 +7,10 @@ import {
   createLinkedInClient,
   SocialPostResult,
 } from "../../../clients/index.js";
-import { POST_TO_LINKEDIN_ORGANIZATION } from "../constants.js";
+import {
+  GENERATE_POST_STATUS,
+  POST_TO_LINKEDIN_ORGANIZATION,
+} from "../constants.js";
 import { RunnableConfig } from "@langchain/core/runnables";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostConfigurable } from "../state.js";
@@ -67,7 +70,8 @@ export async function schedulePost(
     console.warn("Authentication not completed");
     return {
       next: undefined,
-      userResponse: "Authentication required but not completed",
+      userResponse: undefined,
+      status: GENERATE_POST_STATUS.AUTH_REQUIRED,
     };
   }
 
@@ -111,11 +115,14 @@ export async function schedulePost(
       return {
         next: undefined,
         userResponse: undefined,
+        status: GENERATE_POST_STATUS.PUBLISHED,
       };
     } else {
       console.error("Failed to publish post:", publishResult.error);
       return {
         userResponse: `Failed to publish: ${publishResult.error}`,
+        next: undefined,
+        status: GENERATE_POST_STATUS.PUBLISH_FAILED,
       };
     }
   } else {
@@ -142,6 +149,7 @@ export async function schedulePost(
     return {
       next: undefined,
       userResponse: undefined,
+      status: GENERATE_POST_STATUS.SCHEDULED,
     };
   }
 }

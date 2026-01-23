@@ -1,6 +1,7 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { getCreativeModel } from "../../llm.js";
 import { GeneratePostState, GeneratePostUpdate } from "../state.js";
+import { GENERATE_POST_STATUS } from "../constants.js";
 import {
   BUSINESS_CONTEXT,
   POST_CONTENT_RULES,
@@ -28,6 +29,7 @@ export async function generatePost(
     console.warn("No report available for post generation");
     return {
       post: `Check out this interesting content!\n\n${primaryLink}`,
+      status: GENERATE_POST_STATUS.POST_GENERATED_NO_REPORT,
     };
   }
 
@@ -90,11 +92,15 @@ Remember:
       post,
       // Clear user response after processing
       userResponse: undefined,
+      status: userResponse
+        ? GENERATE_POST_STATUS.POST_GENERATED_FROM_FEEDBACK
+        : GENERATE_POST_STATUS.POST_GENERATED,
     };
   } catch (error) {
     console.error("Error generating post:", error);
     return {
       post: `Exciting new content to explore!\n\n${primaryLink}`,
+      status: GENERATE_POST_STATUS.POST_GENERATION_FAILED,
     };
   }
 }
