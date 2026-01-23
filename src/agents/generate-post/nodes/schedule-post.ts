@@ -1,6 +1,7 @@
 import { GeneratePostState, GeneratePostUpdate } from "../state.js";
 import { formatDateType } from "./date-parser.js";
 import { requireAuth } from "./auth-interrupt.js";
+import { saveUsedUrls } from "./store-operations.js";
 import {
   createTwitterClient,
   createLinkedInClient,
@@ -8,6 +9,7 @@ import {
 } from "../../../clients/index.js";
 import { POST_TO_LINKEDIN_ORGANIZATION } from "../constants.js";
 import { RunnableConfig } from "@langchain/core/runnables";
+import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { GeneratePostConfigurable } from "../state.js";
 
 /**
@@ -100,6 +102,12 @@ export async function schedulePost(
         }
       }
 
+      // Save used URLs to prevent duplicate posts
+      if (linksToUse && linksToUse.length > 0) {
+        await saveUsedUrls(config as LangGraphRunnableConfig, linksToUse);
+        console.log(`\nSaved ${linksToUse.length} URLs to prevent future duplicates`);
+      }
+
       return {
         next: undefined,
         userResponse: undefined,
@@ -124,6 +132,12 @@ export async function schedulePost(
     console.log("=".repeat(50));
     console.log(`\nThe post will be published on: ${formatDateType(scheduleDate)}`);
     console.log("(Note: External scheduler required for actual scheduled posting)");
+
+    // Save used URLs to prevent duplicate posts
+    if (linksToUse && linksToUse.length > 0) {
+      await saveUsedUrls(config as LangGraphRunnableConfig, linksToUse);
+      console.log(`\nSaved ${linksToUse.length} URLs to prevent future duplicates`);
+    }
 
     return {
       next: undefined,

@@ -14,6 +14,10 @@ import {
   rewritePost,
   updateScheduleDate,
   schedulePost,
+  // URL Deduplication
+  checkUrls,
+  routeAfterUrlCheck,
+  URL_CHECK_ROUTE_MAP,
   // Routing
   routeAfterPostGeneration,
   routeAfterCondense,
@@ -28,13 +32,16 @@ import {
  *
  * This graph handles the full post generation workflow with human-in-the-loop:
  *
+ * Phase 0: URL Deduplication
+ *   START -> checkUrls -> [conditional: generateReport or END (if all duplicates)]
+ *
  * Phase 1: Content Generation
- *   START -> generateReport -> generatePost -> [conditional: condensePost or humanReview]
- *         condensePost -> [conditional: condensePost (retry) or humanReview]
+ *   generateReport -> generatePost -> [conditional: condensePost or humanReview]
+ *   condensePost -> [conditional: condensePost (retry) or humanReview]
  *
  * Phase 2: Human Review (Interrupt)
  *   humanReview -> [interrupt for human input] -> [conditional routing based on response]
- *     - accept -> schedulePost -> END
+ *     - accept -> schedulePost -> END (saves used URLs)
  *     - edit -> rewritePost -> [conditional: condensePost or humanReview]
  *     - ignore -> END
  *     - respond (schedule) -> updateScheduleDate -> humanReview
@@ -43,6 +50,9 @@ import {
  * Flow Diagram:
  * ```
  *                    START
+ *                      │
+ *                      ▼
+ *                 checkUrls ────────► END (all duplicates)
  *                      │
  *                      ▼
  *               generateReport
@@ -68,6 +78,11 @@ const generatePostBuilder = new StateGraph(
   GeneratePostConfigurableAnnotation
 )
   // ============================================
+  // Phase 0: URL Deduplication
+  // ============================================
+  .addNode("checkUrls", checkUrls)
+
+  // ============================================
   // Phase 1: Content Generation Nodes
   // ============================================
   .addNode("generateReport", generateReport)
@@ -84,11 +99,18 @@ const generatePostBuilder = new StateGraph(
   .addNode("unknownResponse", unknownResponseNode)
 
   // ============================================
-  // Phase 1: Content Generation Edges
+  // Phase 0: URL Deduplication Edges
   // ============================================
 
-  // START -> generateReport
-  .addEdge(START, "generateReport")
+  // START -> checkUrls
+  .addEdge(START, "checkUrls")
+
+  // checkUrls -> [conditional: generateReport or END]
+  .addConditionalEdges("checkUrls", routeAfterUrlCheck, URL_CHECK_ROUTE_MAP)
+
+  // ============================================
+  // Phase 1: Content Generation Edges
+  // ============================================
 
   // generateReport -> generatePost
   .addEdge("generateReport", "generatePost")

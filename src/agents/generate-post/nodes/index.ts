@@ -45,3 +45,17 @@ export {
   type PostGenerationRoute,
   type HumanResponseRoute,
 } from "./routing.js";
+
+// URL Deduplication
+export {
+  checkUrls,
+  routeAfterUrlCheck,
+  URL_CHECK_ROUTE_MAP,
+} from "./check-urls.js";
+
+export {
+  getSavedUrls,
+  saveUsedUrls,
+  checkUrlsUsage,
+  clearSavedUrls,
+} from "./store-operations.js";
