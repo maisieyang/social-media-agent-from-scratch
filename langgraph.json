@@ -9,5 +9,12 @@
     "curate_data": "./src/agents/curate-data/graph.ts:curateDataGraph",
     "supervisor": "./src/agents/supervisor/graph.ts:supervisorGraph"
   },
-  "env": ".env"
+  "env": ".env",
+  "dockerfile_lines": [
+    "RUN apt-get update && apt-get install -y chromium",
+    "RUN npx playwright install-deps chromium"
+  ],
+  "store": {
+    "type": "memory"
+  }
 }

@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment files (use docker-compose env_file or secrets)
+.env
+.env.local
+.env.*.local
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test
+coverage/
+.jest/
+
+# LangGraph local data
+.langgraph_api/
+
+# Claude
+.claude/
+
+# Documentation (not needed in container)
+*.md
+!README.md
+
+# Development files
+tsconfig.json
+.eslintrc*
+.prettierrc*
+jest.config.*
