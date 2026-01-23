@@ -12,7 +12,16 @@ export { condensePost, shouldCondensePost } from "./condense-post.js";
 // Human interaction nodes
 export { humanReviewNode, unknownResponseNode } from "./human-node.js";
 export { rewritePost } from "./rewrite-post.js";
-export { updateScheduleDate, schedulePost } from "./update-schedule-date.js";
+export { updateScheduleDate } from "./update-schedule-date.js";
+export { schedulePost, type PublishResult } from "./schedule-post.js";
+
+// Authentication
+export {
+  checkAuthStatus,
+  requireAuth,
+  waitForArcadeAuth,
+  type AuthStatus,
+} from "./auth-interrupt.js";
 
 // Date parsing utilities
 export {
