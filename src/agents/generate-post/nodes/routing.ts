@@ -10,7 +10,17 @@ const MAX_CONDENSE_ATTEMPTS = 3;
 /**
  * Route type for post generation flow
  */
-export type PostGenerationRoute = "condensePost" | "end";
+export type PostGenerationRoute = "condensePost" | "humanReview" | "end";
+
+/**
+ * Route type for human response flow
+ */
+export type HumanResponseRoute =
+  | "schedulePost"
+  | "rewritePost"
+  | "updateScheduleDate"
+  | "unknownResponse"
+  | "end";
 
 /**
  * Route after post generation
@@ -49,8 +59,8 @@ export function routeAfterPostGeneration(
     );
   }
 
-  console.log(`Post within limit (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), ending flow`);
-  return "end";
+  console.log(`Post within limit (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), routing to human review`);
+  return "humanReview";
 }
 
 /**
@@ -79,9 +89,9 @@ export function routeAfterCondense(
 
   if (withinLimit) {
     console.log(
-      `Post now within limit (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), ending flow`
+      `Post now within limit (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), routing to human review`
     );
-    return "end";
+    return "humanReview";
   }
 
   if (canCondenseMore) {
@@ -92,9 +102,68 @@ export function routeAfterCondense(
   }
 
   console.warn(
-    `Post still exceeds limit after ${MAX_CONDENSE_ATTEMPTS} attempts, ending flow`
+    `Post still exceeds limit after ${MAX_CONDENSE_ATTEMPTS} attempts, routing to human review anyway`
   );
-  return "end";
+  return "humanReview";
+}
+
+/**
+ * Route after human response
+ *
+ * Routes based on the next field set by humanReviewNode.
+ *
+ * @param state - Current graph state
+ * @returns Next node to execute
+ */
+export function routeAfterHumanResponse(
+  state: GeneratePostState
+): HumanResponseRoute {
+  const { next } = state;
+
+  if (!next) {
+    console.log("No next route specified, ending flow");
+    return "end";
+  }
+
+  // Handle END constant - use string comparison
+  if (next === END || String(next) === "__end__") {
+    console.log("Human chose to end flow");
+    return "end";
+  }
+
+  console.log(`Routing to: ${next}`);
+  return next as HumanResponseRoute;
+}
+
+/**
+ * Route after rewrite
+ *
+ * After rewriting, check if post needs condensing again.
+ */
+export function routeAfterRewrite(
+  state: GeneratePostState
+): PostGenerationRoute {
+  const { post, condenseCount } = state;
+
+  if (!post) {
+    console.log("No post after rewrite, routing to human review");
+    return "humanReview";
+  }
+
+  const exceedsLimit = post.length > TWITTER_MAX_CHAR_LENGTH;
+  const canCondense = condenseCount < MAX_CONDENSE_ATTEMPTS;
+
+  if (exceedsLimit && canCondense) {
+    console.log(
+      `Rewritten post exceeds limit (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), routing to condense`
+    );
+    return "condensePost";
+  }
+
+  console.log(
+    `Rewritten post ready (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), routing to human review`
+  );
+  return "humanReview";
 }
 
 /**
@@ -102,5 +171,17 @@ export function routeAfterCondense(
  */
 export const POST_GENERATION_ROUTE_MAP = {
   condensePost: "condensePost",
+  humanReview: "humanReview",
+  end: END,
+} as const;
+
+/**
+ * Mapping for human response routing
+ */
+export const HUMAN_RESPONSE_ROUTE_MAP = {
+  schedulePost: "schedulePost",
+  rewritePost: "rewritePost",
+  updateScheduleDate: "updateScheduleDate",
+  unknownResponse: "unknownResponse",
   end: END,
 } as const;
