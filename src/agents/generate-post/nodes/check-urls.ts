@@ -94,6 +94,7 @@ export async function checkUrls(
 
   return {
     links: newUrls,
+    condenseCount: 0,
     status:
       newUrls.length < links.length
         ? GENERATE_POST_STATUS.URL_CHECK_FILTERED

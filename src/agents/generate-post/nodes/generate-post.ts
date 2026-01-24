@@ -92,6 +92,7 @@ Remember:
       post,
       // Clear user response after processing
       userResponse: undefined,
+      condenseCount: 0,
       status: userResponse
         ? GENERATE_POST_STATUS.POST_GENERATED_FROM_FEEDBACK
         : GENERATE_POST_STATUS.POST_GENERATED,
