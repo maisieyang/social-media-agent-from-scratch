@@ -103,9 +103,6 @@ export const TEXT_ONLY_MODE = "textOnlyMode";
 export const SKIP_CONTENT_RELEVANCY_CHECK = "skipContentRelevancyCheck";
 export const SKIP_USED_URLS_CHECK = "skipUsedUrlsCheck";
 
-// Twitter character limit
-export const TWITTER_MAX_CHAR_LENGTH = 280;
-
 export const GENERATE_POST_STATUS = {
   URL_CHECK_SKIPPED: "url_check_skipped",
   URL_CHECK_SKIPPED_NO_LINKS: "url_check_skipped_no_links",

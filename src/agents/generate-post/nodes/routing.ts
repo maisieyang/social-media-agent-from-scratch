@@ -1,11 +1,5 @@
 import { END } from "@langchain/langgraph";
 import { GeneratePostState } from "../state.js";
-import { TWITTER_MAX_CHAR_LENGTH } from "../constants.js";
-
-/**
- * Maximum number of condense attempts before giving up
- */
-const MAX_CONDENSE_ATTEMPTS = 3;
 
 /**
  * Route type for post generation flow
@@ -33,7 +27,7 @@ export type HumanResponseRoute =
 export function routeAfterPostGeneration(
   state: GeneratePostState
 ): PostGenerationRoute {
-  const { post, condenseCount } = state;
+  const { post } = state;
 
   // If no post, go to end
   if (!post) {
@@ -41,24 +35,7 @@ export function routeAfterPostGeneration(
     return "end";
   }
 
-  // Check if post exceeds Twitter limit
-  const exceedsLimit = post.length > TWITTER_MAX_CHAR_LENGTH;
-  const canCondense = condenseCount < MAX_CONDENSE_ATTEMPTS;
-
-  if (exceedsLimit && canCondense) {
-    console.log(
-      `Post exceeds limit (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), routing to condense`
-    );
-    return "condensePost";
-  }
-
-  if (exceedsLimit && !canCondense) {
-    console.warn(
-      `Post exceeds limit but max condense attempts (${MAX_CONDENSE_ATTEMPTS}) reached`
-    );
-  }
-
-  console.log(`Post within limit (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), routing to human review`);
+  console.log("Post generated, routing to human review");
   return "humanReview";
 }
 
@@ -74,7 +51,7 @@ export function routeAfterPostGeneration(
 export function routeAfterCondense(
   state: GeneratePostState
 ): PostGenerationRoute {
-  const { post, condenseCount } = state;
+  const { post } = state;
 
   // If no post, go to end
   if (!post) {
@@ -82,27 +59,7 @@ export function routeAfterCondense(
     return "end";
   }
 
-  // Check if post is now within limit
-  const withinLimit = post.length <= TWITTER_MAX_CHAR_LENGTH;
-  const canCondenseMore = condenseCount < MAX_CONDENSE_ATTEMPTS;
-
-  if (withinLimit) {
-    console.log(
-      `Post now within limit (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), routing to human review`
-    );
-    return "humanReview";
-  }
-
-  if (canCondenseMore) {
-    console.log(
-      `Post still exceeds limit (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), attempting another condense`
-    );
-    return "condensePost";
-  }
-
-  console.warn(
-    `Post still exceeds limit after ${MAX_CONDENSE_ATTEMPTS} attempts, routing to human review anyway`
-  );
+  console.log("Post condensed, routing to human review");
   return "humanReview";
 }
 
@@ -142,26 +99,14 @@ export function routeAfterHumanResponse(
 export function routeAfterRewrite(
   state: GeneratePostState
 ): PostGenerationRoute {
-  const { post, condenseCount } = state;
+  const { post } = state;
 
   if (!post) {
     console.log("No post after rewrite, routing to human review");
     return "humanReview";
   }
 
-  const exceedsLimit = post.length > TWITTER_MAX_CHAR_LENGTH;
-  const canCondense = condenseCount < MAX_CONDENSE_ATTEMPTS;
-
-  if (exceedsLimit && canCondense) {
-    console.log(
-      `Rewritten post exceeds limit (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), routing to condense`
-    );
-    return "condensePost";
-  }
-
-  console.log(
-    `Rewritten post ready (${post.length}/${TWITTER_MAX_CHAR_LENGTH}), routing to human review`
-  );
+  console.log("Rewritten post ready, routing to human review");
   return "humanReview";
 }
 

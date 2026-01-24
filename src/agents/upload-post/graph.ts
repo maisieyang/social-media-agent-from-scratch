@@ -29,14 +29,6 @@ async function validatePost(state: UploadPostState): Promise<UploadPostUpdate> {
     };
   }
 
-  // Check Twitter character limit
-  if (platforms.includes("twitter") && content.length > 280) {
-    return {
-      success: false,
-      error: `Post exceeds Twitter's 280 character limit (${content.length} characters)`,
-    };
-  }
-
   console.log("Post validation passed");
   console.log(`Content length: ${content.length} characters`);
   console.log(`Target platforms: ${platforms.join(", ")}`);

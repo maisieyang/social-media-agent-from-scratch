@@ -6,7 +6,7 @@ import {
   POST_CONTENT_RULES,
   POST_STRUCTURE_INSTRUCTIONS,
 } from "../prompts/index.js";
-import { GENERATE_POST_STATUS, TWITTER_MAX_CHAR_LENGTH } from "../constants.js";
+import { GENERATE_POST_STATUS } from "../constants.js";
 
 /**
  * Rewrite Post Node
@@ -48,7 +48,6 @@ ${POST_CONTENT_RULES}
 
 Important guidelines:
 - Incorporate the user's feedback while maintaining post quality
-- Keep the post under ${TWITTER_MAX_CHAR_LENGTH} characters
 - ALWAYS include the source link
 - Maintain the three-section structure (hook, body, CTA)
 - No hashtags, limited emoji usage`;
@@ -70,7 +69,7 @@ ${primaryLink}
 ${report ? `<context-report>\n${report.slice(0, 2000)}\n</context-report>` : ""}
 
 Please provide the rewritten post that incorporates the feedback while following all the rules.
-The post MUST be under ${TWITTER_MAX_CHAR_LENGTH} characters including the link.`;
+Keep it concise while including the source link.`;
 
   const model = getCreativeModel();
 

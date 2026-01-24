@@ -2,7 +2,7 @@ import { END, interrupt } from "@langchain/langgraph";
 import { GeneratePostState, GeneratePostUpdate } from "../state.js";
 import { HumanInterrupt, HumanResponse } from "../../types.js";
 import { formatDateType } from "./date-parser.js";
-import { GENERATE_POST_STATUS, TWITTER_MAX_CHAR_LENGTH } from "../constants.js";
+import { GENERATE_POST_STATUS } from "../constants.js";
 
 /**
  * Create the human interrupt request payload
@@ -18,7 +18,6 @@ function createInterruptPayload(state: GeneratePostState): HumanInterrupt {
   const postInfo = {
     content: post,
     characterCount: post?.length || 0,
-    withinLimit: (post?.length || 0) <= TWITTER_MAX_CHAR_LENGTH,
     sourceLink: primaryLink,
     hasImage: !!image,
     imageUrl: image?.imageUrl,
@@ -36,7 +35,7 @@ Please review the generated post and choose an action:
 POST CONTENT:
 ${post}
 
-CHARACTER COUNT: ${postInfo.characterCount}/${TWITTER_MAX_CHAR_LENGTH} ${postInfo.withinLimit ? "✓" : "✗ (exceeds limit)"}
+CHARACTER COUNT: ${postInfo.characterCount}
 SOURCE: ${primaryLink}
 IMAGE: ${postInfo.hasImage ? postInfo.imageUrl : "None"}
 SCHEDULED FOR: ${postInfo.scheduledFor}
