@@ -2,7 +2,11 @@ import { z } from "zod";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
 import { getPrompts } from "../../generate-post/prompts/index.js";
 import { VerifyContentAnnotation } from "../shared-state.js";
-import { getPageText } from "../../utils.js";
+import {
+  extractAllImageUrlsFromMarkdown,
+  filterUnwantedImageUrls,
+  getPageText,
+} from "../../utils.js";
 import { scrapeWithFirecrawl } from "../../../utils/firecrawl.js";
 import { verifyContentIsRelevant } from "./verify-content.js";
 import { VerifyLinksResultAnnotation } from "../../generate-post/state.js";
@@ -90,12 +94,18 @@ export async function verifyGeneralContent(
   try {
     const urlContents = await getUrlContents(state.link);
 
+    const extractedImages = filterUnwantedImageUrls(
+      extractAllImageUrlsFromMarkdown(urlContents.content)
+    );
+    const imageOptions =
+      urlContents.imageUrls && urlContents.imageUrls.length > 0
+        ? urlContents.imageUrls
+        : extractedImages;
+
     const returnValue: VerifyGeneralContentReturn = {
       relevantLinks: [state.link],
       pageContents: [urlContents.content],
-      ...(urlContents.imageUrls?.length
-        ? { imageOptions: urlContents.imageUrls }
-        : {}),
+      ...(imageOptions.length ? { imageOptions } : {}),
     };
 
     // Skip relevancy check if configured

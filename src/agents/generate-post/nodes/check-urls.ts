@@ -110,15 +110,15 @@ export async function checkUrls(
  */
 export function routeAfterUrlCheck(
   state: GeneratePostUpdate
-): "generateReport" | typeof END {
+): "verifyLinks" | typeof END {
   if (state.next === END) {
     return END;
   }
-  return "generateReport";
+  return "verifyLinks";
 }
 
 /** Route map for URL check conditional edge */
 export const URL_CHECK_ROUTE_MAP = {
-  generateReport: "generateReport",
+  verifyLinks: "verifyLinks",
   end: END,
 } as const;

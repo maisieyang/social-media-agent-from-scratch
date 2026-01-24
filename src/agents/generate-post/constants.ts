@@ -109,6 +109,8 @@ export const GENERATE_POST_STATUS = {
   URL_CHECK_ALL_DUPLICATES: "url_check_all_duplicates",
   URL_CHECK_FILTERED: "url_check_filtered",
   URL_CHECK_ALL_NEW: "url_check_all_new",
+  VERIFY_LINKS_SKIPPED_NO_LINKS: "verify_links_skipped_no_links",
+  VERIFY_LINKS_COMPLETED: "verify_links_completed",
   REPORT_SKIPPED_NO_CONTENT: "report_skipped_no_content",
   REPORT_GENERATED: "report_generated",
   REPORT_FAILED: "report_failed",

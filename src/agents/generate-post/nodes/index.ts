@@ -8,6 +8,7 @@
 export { generateReport } from "./generate-report.js";
 export { generatePost } from "./generate-post.js";
 export { condensePost, shouldCondensePost } from "./condense-post.js";
+export { verifyLinksNode } from "./verify-links.js";
 
 // Human interaction nodes
 export { humanReviewNode } from "./human-node.js";

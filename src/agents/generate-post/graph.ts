@@ -8,6 +8,7 @@ import {
   generateReport,
   generatePost,
   condensePost,
+  verifyLinksNode,
   // Human interaction nodes
   humanReviewNode,
   rewritePost,
@@ -32,7 +33,8 @@ import {
  * This graph handles the full post generation workflow with human-in-the-loop:
  *
  * Phase 0: URL Deduplication
- *   START -> checkUrls -> [conditional: generateReport or END (if all duplicates)]
+ *   START -> checkUrls -> [conditional: verifyLinks or END (if all duplicates)]
+ *   verifyLinks -> generateReport
  *
  * Phase 1: Content Generation
  *   generateReport -> generatePost -> [conditional: condensePost or humanReview]
@@ -52,6 +54,9 @@ import {
  *                      │
  *                      ▼
  *                 checkUrls ────────► END (all duplicates)
+ *                      │
+ *                      ▼
+ *                 verifyLinks
  *                      │
  *                      ▼
  *               generateReport
@@ -80,6 +85,7 @@ const generatePostBuilder = new StateGraph(
   // Phase 0: URL Deduplication
   // ============================================
   .addNode("checkUrls", checkUrls)
+  .addNode("verifyLinks", verifyLinksNode)
 
   // ============================================
   // Phase 1: Content Generation Nodes
@@ -105,6 +111,9 @@ const generatePostBuilder = new StateGraph(
 
   // checkUrls -> [conditional: generateReport or END]
   .addConditionalEdges("checkUrls", routeAfterUrlCheck, URL_CHECK_ROUTE_MAP)
+
+  // verifyLinks -> generateReport
+  .addEdge("verifyLinks", "generateReport")
 
   // ============================================
   // Phase 1: Content Generation Edges
