@@ -210,33 +210,14 @@ export async function humanReviewNode(
       // Unknown response type
       return {
         userResponse: JSON.stringify(args),
-        next: "unknownResponse",
+        next: END,
         status: GENERATE_POST_STATUS.REVIEW_UNKNOWN_RESPONSE,
       };
 
     default:
       return {
-        next: "unknownResponse",
+        next: END,
         status: GENERATE_POST_STATUS.REVIEW_UNKNOWN_RESPONSE,
       };
   }
-}
-
-/**
- * Unknown Response Handler
- *
- * Handles cases where the human response couldn't be parsed.
- * Loops back to human review.
- */
-export async function unknownResponseNode(
-  state: GeneratePostState
-): Promise<GeneratePostUpdate> {
-  console.warn("Unknown response received:", state.userResponse);
-  console.log("Returning to human review...");
-
-  return {
-    userResponse: undefined,
-    next: undefined,
-    status: GENERATE_POST_STATUS.REVIEW_UNKNOWN_RESPONSE,
-  };
 }

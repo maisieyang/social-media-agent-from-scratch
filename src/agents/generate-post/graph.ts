@@ -10,7 +10,6 @@ import {
   condensePost,
   // Human interaction nodes
   humanReviewNode,
-  unknownResponseNode,
   rewritePost,
   updateScheduleDate,
   schedulePost,
@@ -45,7 +44,7 @@ import {
  *     - edit -> rewritePost -> [conditional: condensePost or humanReview]
  *     - ignore -> END
  *     - respond (schedule) -> updateScheduleDate -> humanReview
- *     - unknown -> unknownResponse -> humanReview
+ *     - unknown -> END
  *
  * Flow Diagram:
  * ```
@@ -96,7 +95,6 @@ const generatePostBuilder = new StateGraph(
   .addNode("rewritePost", rewritePost)
   .addNode("updateScheduleDate", updateScheduleDate)
   .addNode("schedulePost", schedulePost)
-  .addNode("unknownResponse", unknownResponseNode)
 
   // ============================================
   // Phase 0: URL Deduplication Edges
@@ -150,8 +148,7 @@ const generatePostBuilder = new StateGraph(
   // updateScheduleDate -> humanReview (loop back for confirmation)
   .addEdge("updateScheduleDate", "humanReview")
 
-  // unknownResponse -> humanReview (loop back to try again)
-  .addEdge("unknownResponse", "humanReview");
+  // unknown responses end the graph
 
 // Note: schedulePost has no outgoing edges - it ends the graph
 

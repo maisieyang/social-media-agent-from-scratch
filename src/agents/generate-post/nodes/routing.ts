@@ -19,7 +19,6 @@ export type HumanResponseRoute =
   | "schedulePost"
   | "rewritePost"
   | "updateScheduleDate"
-  | "unknownResponse"
   | "end";
 
 /**
@@ -182,6 +181,5 @@ export const HUMAN_RESPONSE_ROUTE_MAP = {
   schedulePost: "schedulePost",
   rewritePost: "rewritePost",
   updateScheduleDate: "updateScheduleDate",
-  unknownResponse: "unknownResponse",
   end: END,
 } as const;

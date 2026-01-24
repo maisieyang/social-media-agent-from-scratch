@@ -10,7 +10,7 @@ export { generatePost } from "./generate-post.js";
 export { condensePost, shouldCondensePost } from "./condense-post.js";
 
 // Human interaction nodes
-export { humanReviewNode, unknownResponseNode } from "./human-node.js";
+export { humanReviewNode } from "./human-node.js";
 export { rewritePost } from "./rewrite-post.js";
 export { updateScheduleDate } from "./update-schedule-date.js";
 export { schedulePost, type PublishResult } from "./schedule-post.js";
