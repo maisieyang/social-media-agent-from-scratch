@@ -219,12 +219,15 @@ docker-compose --profile full up
 
 The `generate_post` graph supports human review before publishing:
 
-| Response | Action |
-|----------|--------|
-| `yes` / `accept` | Publish immediately |
-| `schedule <date>` | Schedule for later (e.g., "schedule tomorrow 2pm") |
-| `edit: <instruction>` | Rewrite with feedback |
-| `no` / `ignore` | Discard post |
+### humanReview 输入可选项
+
+在 `humanReview` 中，你可以用 JSON 形式回复。下面是可选输入及含义：
+
+- `{"type":"accept"}`：接受当前内容并继续发布流程
+- `{"type":"ignore"}`：放弃该帖子并结束
+- `{"type":"edit","args":{"feedback":"把语气更正式，压缩到 240 字"}}`：进入重写流程，`feedback` 作为改写指令
+- `{"type":"respond","args":{"scheduleDate":"tomorrow 9am"}}`：进入排期更新流程
+- `{"type":"respond","args":{"post":"改成这段文案..."}}`：进入重写流程，使用你给的文案作为输入
 
 ## Environment Variables
 
