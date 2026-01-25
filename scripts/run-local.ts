@@ -8,11 +8,11 @@
  *
  * Usage:
  *   npx ts-node scripts/run-local.ts --graph generate_post --links "https://example.com"
- *   npx ts-node scripts/run-local.ts --graph supervisor
+ *   npx ts-node scripts/run-local.ts --graph verify_links --links "https://example.com"
  *
  * Options:
- *   --graph <name>   Graph to run (generate_post, supervisor, etc.)
- *   --links <urls>   Comma-separated URLs (for generate_post)
+ *   --graph <name>   Graph to run (generate_post, verify_links)
+ *   --links <urls>   Comma-separated URLs
  *   --dry-run        Skip actual posting
  */
 
@@ -70,15 +70,6 @@ async function main(): Promise<void> {
       break;
     }
 
-    case "supervisor": {
-      const { supervisorGraph } = await import(
-        "../src/agents/supervisor/graph.js"
-      );
-      graph = supervisorGraph;
-      input = {};
-      break;
-    }
-
     case "verify_links": {
       const { verifyLinksGraph } = await import(
         "../src/agents/verify-links/graph.js"
@@ -98,9 +89,7 @@ async function main(): Promise<void> {
 
     default:
       console.error(`Unknown graph: ${graphName}`);
-      console.error(
-        "Available: generate_post, supervisor, verify_links"
-      );
+      console.error("Available: generate_post, verify_links");
       process.exit(1);
   }
 

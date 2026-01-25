@@ -80,6 +80,7 @@ The `generate_post` graph is the core pipeline that transforms input links into 
 |-------|-------------|
 | `generate_post` | Core pipeline: URL deduplication → content extraction → post generation → human review → publishing |
 | `verify_links` | Sub-graph: Extracts page contents, relevant links, and images from URLs (invoked by verifyLinks node) |
+| `upload_post` | Sub-graph: Validates and publishes posts to Twitter/LinkedIn with authentication handling |
 
 ## Quick Start
 
@@ -159,11 +160,11 @@ npm run run:local -- --graph generate_post --links "https://..." --dry-run
 ### Cron Jobs
 
 ```bash
-# Run via LangGraph API
-npm run cron -- --graph generate_post
+# Run via LangGraph API (requires running langgraph:dev first)
+npm run cron -- --links "https://github.com/user/repo"
 
 # Crontab example: Run daily at 8 AM
-0 8 * * * cd /path/to/project && npm run cron
+0 8 * * * cd /path/to/project && npm run cron -- --links "https://example.com"
 ```
 
 ## Testing
@@ -240,6 +241,7 @@ docker-compose --profile full up
 │   │   │   │   └── routing.ts           # Conditional routing
 │   │   │   └── prompts/       # LLM prompts
 │   │   ├── verify-links/      # Sub-graph: URL verification & content extraction
+│   │   ├── upload-post/       # Sub-graph: Post validation & publishing
 │   │   └── shared/            # Shared utilities
 │   ├── clients/               # Platform clients
 │   │   ├── twitter/

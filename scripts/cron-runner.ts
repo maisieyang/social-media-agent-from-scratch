@@ -4,23 +4,21 @@
  * Cron Runner Script for Social Media Agent
  *
  * This script is designed to be run by a cron job or scheduler.
- * It triggers the supervisor graph to curate content and generate posts.
+ * It triggers the generate_post graph via LangGraph API.
  *
  * Usage:
- *   npx ts-node scripts/cron-runner.ts [--dry-run] [--graph <graph-name>]
+ *   npx ts-node scripts/cron-runner.ts --links "https://example.com" [--dry-run]
  *
  * Options:
+ *   --links <urls>  Comma-separated URLs to process (required)
  *   --dry-run       Run without posting to social media
- *   --graph <name>  Specify which graph to run (default: supervisor)
  *
  * Cron Examples:
- *   # Run every day at 8 AM
- *   0 8 * * * cd /path/to/project && npx ts-node scripts/cron-runner.ts
- *
- *   # Run every Monday, Wednesday, Friday at 9 AM
- *   0 9 * * 1,3,5 cd /path/to/project && npx ts-node scripts/cron-runner.ts
+ *   # Run every day at 8 AM with a specific URL
+ *   0 8 * * * cd /path/to/project && npx ts-node scripts/cron-runner.ts --links "https://example.com"
  *
  * Environment Variables:
+ *   - LANGGRAPH_API_URL: LangGraph API endpoint (default: http://localhost:2024)
  *   - LANGSMITH_TRACING=true (recommended for observability)
  *   - LANGCHAIN_PROJECT=social-media-agent-from-scratch
  */
@@ -31,8 +29,8 @@ import { logTracingStatus } from "../src/utils/tracing.js";
 // Parse command line arguments
 const args = process.argv.slice(2);
 const isDryRun = args.includes("--dry-run");
-const graphIndex = args.indexOf("--graph");
-const graphName = graphIndex !== -1 ? args[graphIndex + 1] : "supervisor";
+const linksIndex = args.indexOf("--links");
+const linksArg = linksIndex !== -1 ? args[linksIndex + 1] : undefined;
 
 // Configuration
 const LANGGRAPH_API_URL = process.env.LANGGRAPH_API_URL || "http://localhost:2024";
@@ -46,7 +44,7 @@ interface CronRunResult {
 }
 
 /**
- * Run the specified graph
+ * Run the generate_post graph
  */
 async function runGraph(
   client: Client,
@@ -117,10 +115,19 @@ async function main(): Promise<void> {
   console.log("SOCIAL MEDIA AGENT - CRON RUNNER");
   console.log("=".repeat(60));
   console.log(`Timestamp: ${new Date().toISOString()}`);
-  console.log(`Graph: ${graphName}`);
   console.log(`Dry Run: ${isDryRun}`);
   console.log(`API URL: ${LANGGRAPH_API_URL}`);
   console.log("=".repeat(60));
+
+  // Validate links argument
+  if (!linksArg) {
+    console.error("Error: --links argument is required");
+    console.error('Example: --links "https://github.com/user/repo"');
+    process.exit(1);
+  }
+
+  const links = linksArg.split(",").map((l) => l.trim());
+  console.log(`Links: ${links.join(", ")}`);
 
   // Log tracing status
   logTracingStatus();
@@ -130,39 +137,9 @@ async function main(): Promise<void> {
     apiUrl: LANGGRAPH_API_URL,
   });
 
-  // Define input based on graph type
-  let input: Record<string, unknown> = {};
-
-  switch (graphName) {
-    case "supervisor":
-      // Supervisor graph orchestrates the full workflow
-      input = {
-        // The supervisor will curate data and generate posts
-      };
-      break;
-
-    case "curate_data":
-      // Curate data graph collects content from sources
-      input = {
-        sources: ["twitter", "github"],
-      };
-      break;
-
-    case "generate_post":
-      // Generate post requires links input
-      console.error("Error: generate_post graph requires --links argument");
-      process.exit(1);
-      break;
-
-    default:
-      console.error(`Error: Unknown graph "${graphName}"`);
-      console.error("Available graphs: supervisor, curate_data, generate_post");
-      process.exit(1);
-  }
-
-  // Run the graph
+  // Run the generate_post graph
   console.log("\nStarting graph execution...\n");
-  const result = await runGraph(client, graphName, input);
+  const result = await runGraph(client, "generate_post", { links });
 
   // Report results
   console.log("\n" + "=".repeat(60));
@@ -170,12 +147,12 @@ async function main(): Promise<void> {
   console.log("=".repeat(60));
 
   if (result.success) {
-    console.log("Status: SUCCESS ✓");
+    console.log("Status: SUCCESS");
     console.log(`Thread ID: ${result.threadId}`);
     console.log(`Run ID: ${result.runId}`);
     console.log(`Duration: ${(result.duration! / 1000).toFixed(2)}s`);
   } else {
-    console.log("Status: FAILED ✗");
+    console.log("Status: FAILED");
     console.log(`Error: ${result.error}`);
     if (result.threadId) console.log(`Thread ID: ${result.threadId}`);
     if (result.runId) console.log(`Run ID: ${result.runId}`);

@@ -4,10 +4,7 @@
   "graphs": {
     "generate_post": "./src/agents/generate-post/graph.ts:generatePostGraph",
     "upload_post": "./src/agents/upload-post/graph.ts:uploadPostGraph",
-    "verify_links": "./src/agents/verify-links/graph.ts:verifyLinksGraph",
-    "find_images": "./src/agents/find-images/graph.ts:findImagesGraph",
-    "curate_data": "./src/agents/curate-data/graph.ts:curateDataGraph",
-    "supervisor": "./src/agents/supervisor/graph.ts:supervisorGraph"
+    "verify_links": "./src/agents/verify-links/graph.ts:verifyLinksGraph"
   },
   "env": ".env",
   "dockerfile_lines": [
