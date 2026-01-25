@@ -60,10 +60,10 @@ The `generate_post` graph is the core pipeline that transforms input links into 
 ```
 
 **Phase 0: URL Deduplication**
-- `checkUrls`: Filters out URLs that have already been used for post generation (via LangGraph Store)
-- `verifyLinks`: Invokes verify-links sub-graph to extract page contents, relevant links, and images
+- `checkUrls`: Filters out URLs that have already been used for post generation (via LangGraph Store). If all URLs are duplicates, ends the graph early.
 
-**Phase 1: Content Generation**
+**Phase 1: Content Extraction & Generation**
+- `verifyLinks`: Invokes verify-links sub-graph to extract page contents, relevant links, and images
 - `generateReport`: Analyzes content and generates a marketing report as context
 - `generatePost`: Creates engaging social media post based on the report
 - `condensePost`: Shortens posts if needed (max 3 attempts)
@@ -79,7 +79,7 @@ The `generate_post` graph is the core pipeline that transforms input links into 
 | Graph | Description |
 |-------|-------------|
 | `generate_post` | Core pipeline: URL deduplication → content extraction → post generation → human review → publishing |
-| `verify_links` | Sub-graph: Validates URLs and extracts page content (invoked by generate_post) |
+| `verify_links` | Sub-graph: Extracts page contents, relevant links, and images from URLs (invoked by verifyLinks node) |
 
 ## Quick Start
 
