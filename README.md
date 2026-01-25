@@ -4,44 +4,82 @@ AI-driven social media content automation system built with LangGraph.
 
 ## Features
 
-- **Content Curation**: Automatically collect and filter content from multiple sources (GitHub, Twitter, Reddit, Slack)
 - **AI Post Generation**: Generate engaging social media posts using LLM with human-in-the-loop review
 - **Multi-Platform Publishing**: Publish to Twitter and LinkedIn simultaneously
 - **URL Deduplication**: Prevent duplicate posts using LangGraph Store
+- **Content Extraction**: Automatically extract page content, relevant links, and images from URLs
 - **Flexible Scheduling**: Schedule posts with natural language date parsing (e.g., "tomorrow at 2pm")
-- **Content Quality Control**: Automatic post condensation to meet platform character limits
+- **Content Quality Control**: Automatic post condensation to meet platform requirements
 - **Full Observability**: LangSmith integration for tracing and debugging
 
 ## Architecture
 
+### Generate Post Graph (Core Pipeline)
+
+The `generate_post` graph is the core pipeline that transforms input links into social media posts:
+
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Supervisor Graph                          │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐  │
-│  │ Curate Data │───▶│Verify Links │───▶│   Generate Post     │  │
-│  │   Graph     │    │   Graph     │    │      Graph          │  │
-│  └─────────────┘    └─────────────┘    └─────────────────────┘  │
-│                                                │                 │
-│                                         ┌──────┴──────┐         │
-│                                         ▼             ▼         │
-│                                    [Human Review] [Schedule]    │
-│                                         │             │         │
-│                                         └──────┬──────┘         │
-│                                                ▼                │
-│                                         [Publish Post]          │
-└─────────────────────────────────────────────────────────────────┘
+                   START
+                     │
+                     ▼
+              ┌─────────────┐
+              │  checkUrls  │ ─────────► END (all duplicates)
+              │ (去重检查)   │
+              └─────────────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │ verifyLinks │
+              │ (内容提取)   │
+              └─────────────┘
+                     │
+                     ▼
+              ┌──────────────┐
+              │generateReport│
+              │ (生成报告)    │
+              └──────────────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │ generatePost│
+              │ (生成帖子)   │
+              └─────────────┘
+                     │
+          ┌─────────┴─────────┐
+          ▼                   ▼
+    condensePost ──────► humanReview ◄───────┐
+    (压缩帖子)           (人工审核)           │
+                              │              │
+                    ┌────────┼────────┐     │
+                    ▼        ▼        ▼     │
+             schedulePost rewritePost update│
+             (发布/排期)  (重写帖子)  (更新时间)
+                    │        │        │     │
+                    ▼        └────────┴─────┘
+                   END
 ```
+
+**Phase 0: URL Deduplication**
+- `checkUrls`: Filters out URLs that have already been used for post generation (via LangGraph Store)
+- `verifyLinks`: Invokes verify-links sub-graph to extract page contents, relevant links, and images
+
+**Phase 1: Content Generation**
+- `generateReport`: Analyzes content and generates a marketing report as context
+- `generatePost`: Creates engaging social media post based on the report
+- `condensePost`: Shortens posts if needed (max 3 attempts)
+
+**Phase 2: Human Review (Interrupt)**
+- `humanReview`: Human-in-the-loop interrupt for post review
+- `rewritePost`: Rewrites post based on user feedback
+- `updateScheduleDate`: Parses and validates new schedule date
+- `schedulePost`: Publishes to Twitter/LinkedIn or schedules for later
 
 ### Graph Components
 
 | Graph | Description |
 |-------|-------------|
-| `supervisor` | Orchestrates the full workflow |
-| `curate_data` | Collects content from configured sources |
-| `verify_links` | Validates URLs and extracts content |
-| `generate_post` | Creates posts with human-in-the-loop review |
-| `upload_post` | Handles multi-platform publishing |
-| `find_images` | Extracts and processes images from content |
+| `generate_post` | Core pipeline: URL deduplication → content extraction → post generation → human review → publishing |
+| `verify_links` | Sub-graph: Validates URLs and extracts page content (invoked by generate_post) |
 
 ## Quick Start
 
@@ -116,16 +154,13 @@ npm run run:generate -- --links "https://github.com/example/repo"
 
 # Run with dry-run mode (no actual posting)
 npm run run:local -- --graph generate_post --links "https://..." --dry-run
-
-# Run supervisor workflow
-npm run run:local -- --graph supervisor
 ```
 
 ### Cron Jobs
 
 ```bash
 # Run via LangGraph API
-npm run cron -- --graph supervisor
+npm run cron -- --graph generate_post
 
 # Crontab example: Run daily at 8 AM
 0 8 * * * cd /path/to/project && npm run cron
@@ -189,22 +224,26 @@ docker-compose --profile full up
 .
 ├── src/
 │   ├── agents/
-│   │   ├── generate-post/     # Post generation graph
+│   │   ├── generate-post/     # Core: Post generation graph
 │   │   │   ├── graph.ts       # Graph definition
 │   │   │   ├── state.ts       # State annotations
+│   │   │   ├── constants.ts   # Status constants
 │   │   │   ├── nodes/         # Graph nodes
+│   │   │   │   ├── check-urls.ts        # URL deduplication
+│   │   │   │   ├── verify-links.ts      # Content extraction
+│   │   │   │   ├── generate-report.ts   # Report generation
+│   │   │   │   ├── generate-post.ts     # Post generation
+│   │   │   │   ├── condense-post.ts     # Post condensation
+│   │   │   │   ├── human-node.ts        # Human review interrupt
+│   │   │   │   ├── rewrite-post.ts      # Post rewriting
+│   │   │   │   ├── schedule-post.ts     # Publishing/scheduling
+│   │   │   │   └── routing.ts           # Conditional routing
 │   │   │   └── prompts/       # LLM prompts
-│   │   ├── curate-data/       # Content curation
-│   │   ├── verify-links/      # URL verification
-│   │   ├── upload-post/       # Publishing
-│   │   ├── find-images/       # Image extraction
-│   │   ├── supervisor/        # Workflow orchestration
+│   │   ├── verify-links/      # Sub-graph: URL verification & content extraction
 │   │   └── shared/            # Shared utilities
 │   ├── clients/               # Platform clients
 │   │   ├── twitter/
-│   │   ├── linkedin/
-│   │   ├── reddit/
-│   │   └── slack/
+│   │   └── linkedin/
 │   ├── utils/                 # Utilities
 │   └── tests/                 # Test suites
 ├── scripts/
@@ -221,13 +260,17 @@ The `generate_post` graph supports human review before publishing:
 
 ### humanReview 输入可选项
 
-在 `humanReview` 中，你可以用 JSON 形式回复。下面是可选输入及含义：
+**简化字符串输入：**
+- `accept` / `approve` / `ok` / `yes`：接受当前内容并继续发布流程
+- `ignore` / `discard` / `skip` / `no`：放弃该帖子并结束
+- 任意其他字符串：作为反馈进入重写流程
 
+**JSON 格式输入：**
 - `{"type":"accept"}`：接受当前内容并继续发布流程
 - `{"type":"ignore"}`：放弃该帖子并结束
 - `{"type":"edit","args":{"feedback":"把语气更正式，压缩到 240 字"}}`：进入重写流程，`feedback` 作为改写指令
-- `{"type":"respond","args":{"scheduleDate":"tomorrow 9am"}}`：进入排期更新流程
-- `{"type":"respond","args":{"post":"改成这段文案..."}}`：进入重写流程，使用你给的文案作为输入
+- `{"type":"respond","args":{"scheduleDate":"tomorrow 9am"}}`：进入排期更新流程（也支持 `date` 字段）
+- `{"type":"respond","args":{"post":"改成这段文案..."}}`：进入重写流程，使用你给的文案作为输入（也支持 `content` / `text` 字段）
 
 ## Environment Variables
 
